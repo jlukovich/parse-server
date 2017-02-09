@@ -21,7 +21,11 @@ class SessionTokenCache {
       logger.verbose('Fetch userId %s of sessionToken %s from Cache', userId, sessionToken);
       return Parse.Promise.as(userId);
     }
-    return Parse.User.become(sessionToken).then((user) => {
+    var query = new Parse.Query('_Session')
+    query.equalTo('sessionToken', sessionToken);
+    query.include('user');
+    return query.first({useMasterKey: true}).then(function(session) {
+      var user = session.get('user');
       logger.verbose('Fetch userId %s of sessionToken %s from Parse', user.id, sessionToken);
       const userId = user.id;
       this.cache.set(sessionToken, userId);
